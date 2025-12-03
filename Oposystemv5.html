@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpoMaster Pro v4</title>
+    <!-- Font Awesome para íconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuente Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Colores Base */
+            --bg: #F3F4F6;
+            --card-bg: #ffffff;
+            --text-main: #1F2937;
+            --text-light: #6B7280;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+
+            /* Código de Colores */
+            --color-dashboard: #4F46E5; /* Indigo */
+            --color-topics: #10B981;    /* Emerald */
+            --color-flashcards: #F59E0B; /* Amber */
+            --color-tests: #E11D48;     /* Rose */
+            --color-settings: #64748B;  /* Slate */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden; /* Controlado por el overflow-y: auto de #main-content */
+        }
+
+        /* --- Sidebar --- */
+        #sidebar {
+            width: 260px;
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            transition: 0.3s;
+        }
+
+        .brand { 
+            font-size: 1.4rem; font-weight: 800; 
+            margin-bottom: 30px; display: flex; align-items: center; gap: 10px; 
+            background: linear-gradient(45deg, var(--color-dashboard), var(--color-tests));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-btn {
+            background: none; border: none; width: 100%; padding: 14px 15px;
+            text-align: left; cursor: pointer; border-radius: 12px;
+            color: var(--text-light); font-weight: 700; transition: 0.3s;
+            display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .nav-btn:hover { background: #F3F4F6; transform: translateX(5px); }
+        .nav-btn.active#nav-dash { background: #EEF2FF; color: var(--color-dashboard); border-left: 4px solid var(--color-dashboard); }
+        .nav-btn.active#nav-topics { background: #ECFDF5; color: var(--color-topics); border-left: 4px solid var(--color-topics); }
+        .nav-btn.active#nav-flash { background: #FFFBEB; color: var(--color-flashcards); border-left: 4px solid var(--color-flashcards); }
+        .nav-btn.active#nav-tests { background: #FFF1F2; color: var(--color-tests); border-left: 4px solid var(--color-tests); }
+        .nav-btn.active#nav-settings { background: #F1F5F9; color: var(--color-settings); border-left: 4px solid var(--color-settings); }
+
+        /* --- Main Content --- */
+        #main-content { flex: 1; overflow-y: auto; padding: 30px; position: relative; }
+        .section { display: none; animation: fadeIn 0.4s ease; max-width: 1100px; margin: 0 auto; }
+        .section.active { display: block; }
+
+        h2 { font-size: 2rem; margin-bottom: 25px; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        
+        /* Estilos Rich Text (Editor) */
+        .rich-editor {
+            width: 100%; 
+            min-height: 400px; 
+            padding: 20px; 
+            border: 2px solid #E5E7EB; 
+            border-radius: 12px; 
+            background: white; 
+            overflow-y: auto; 
+            font-size: 1rem; 
+            line-height: 1.6;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .rich-editor:focus { border-color: var(--color-topics); }
+        /* Estilos internos para el contenido del editor */
+        .rich-editor b, .rich-editor strong { font-weight: 800; color: #000; }
+        .rich-editor i, .rich-editor em { font-style: italic; color: #444; }
+        .rich-editor ul { padding-left: 20px; margin: 10px 0; }
+        
+        .rich-input-small {
+            min-height: 80px; 
+            max-height: 150px;
+            padding: 12px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            background: #F9FAFB;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-size: 0.95rem;
+        }
+        .rich-input-small:focus { background: white; border-color: #9CA3AF; outline: none; }
+
+        /* --- Componentes --- */
+        .card { background: var(--card-bg); border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.03); }
+        .btn { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        
+        .btn-dash { background: var(--color-dashboard); color: white; }
+        .btn-topic { background: var(--color-topics); color: white; }
+        .btn-flash { background: var(--color-flashcards); color: white; }
+        .btn-test { background: var(--color-tests); color: white; }
+        .btn-settings { background: var(--color-settings); color: white; }
+        
+        .input-field { width: 100%; padding: 14px; border: 2px solid #E5E7EB; border-radius: 10px; margin-bottom: 15px; font-size: 1rem; background: #F9FAFB; }
+        
+        /* Select personalizado */
+        .select-style {
+            padding: 12px; border-radius: 10px; border: 2px solid #E5E7EB;
+            background: white; font-size: 1rem; color: var(--text-main); cursor: pointer;
+            min-width: 200px;
+        }
+
+        /* --- Flashcards Fullscreen --- */
+        #fullscreen-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.95); z-index: 2000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .fc-scene { width: 90%; max-width: 800px; height: 70vh; perspective: 2000px; cursor: pointer; }
+        .fc-card { width: 100%; height: 100%; position: relative; transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1); transform-style: preserve-3d; }
+        
+        /* Contenedor de la cara de la tarjeta */
+        .fc-face { 
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+            border-radius: 24px; display: flex; flex-direction: column;
+            padding: 40px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+        }
+
+        /* Estilo del frente (Pregunta) - CENTRADO */
+        .fc-front { 
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; transform: rotateY(0deg); 
+            align-items: center; justify-content: center; 
+        }
+        
+        /* Estilo del reverso (Respuesta) - CORRECCIÓN DE SCROLL */
+        .fc-back { 
+            background: linear-gradient(135deg, #fffbeb, #fbbf24); color: #1e293b; transform: rotateY(180deg); 
+            /* Se ha cambiado justify-content a flex-start para que el contenido empiece desde arriba */
+            align-items: flex-start; 
+            justify-content: flex-start; 
+        }
+        
+        /* La tarjeta volteada */
+        .fc-card.is-flipped { transform: rotateY(180deg); }
+        
+        /* Contenido principal de texto del reverso (Ajuste para permitir scroll) */
+        .fc-text-main { 
+            font-size: 1.2rem; 
+            font-weight: 600; 
+            line-height: 1.6; 
+            white-space: pre-wrap; 
+            
+            /* REGLAS CLAVE PARA SCROLL EN CONTENIDO LARGO */
+            flex-grow: 1; /* Ocupa el espacio restante en el flex container (necesario) */
+            width: 100%; /* Asegura que el contenedor de texto ocupe todo el ancho */
+            text-align: left;
+            overflow-y: auto; /* PERMITE EL SCROLL VERTICAL */
+            padding-right: 15px; /* Pequeño padding para que la barra de scroll no toque el borde */
+        }
+
+        .fc-front .fc-text-main { 
+             font-size: 1.8rem; /* Tamaño más grande para la pregunta en el frente */
+             text-align: center;
+        }
+
+        .fc-text-main b { color: #FFD700; } /* Resaltar negritas en flashcards */
+
+
+        /* --- Topics Grid --- */
+        .topic-btn { border: 1px solid #E5E7EB; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; background: white; font-weight: 600; }
+        .topic-btn:hover { background: #F3F4F6; }
+        .topic-btn.active { background: var(--color-topics); color: white; border-color: var(--color-topics); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4); }
+
+        /* --- Test Styles --- */
+        .option-btn { width: 100%; text-align: left; padding: 18px; margin-bottom: 12px; background: white; border: 2px solid #E5E7EB; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 1.05rem; position: relative; }
+        .option-btn:hover { border-color: var(--color-tests); background: #FFF1F2; }
+        .option-btn.correct { background: #D1FAE5; border-color: #10B981; color: #064E3B; font-weight: bold; }
+        .option-btn.wrong { background: #FEE2E2; border-color: #EF4444; color: #7F1D1D; }
+        
+        /* Listado de elementos en Modals de Gestión */
+        .management-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; border-bottom: 1px solid #F3F4F6;
+            transition: background 0.2s;
+        }
+        .management-item:hover { background: #F9FAFB; }
+        .management-item-text { flex: 1; margin-right: 10px; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* --- Modals --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal.open { display: flex; }
+        .modal-content { background: white; padding: 35px; border-radius: 20px; width: 90%; max-width: 600px; position: relative; animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto; }
+
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; overflow: auto; }
+            #sidebar { 
+                width: 100%; flex-direction: row; 
+                position: fixed; bottom: 0; top: auto; left: 0; 
+                height: 70px; padding: 5px; 
+                border-radius: 20px 20px 0 0; justify-content: space-around;
+                box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1); /* Sombra hacia arriba */
+            }
+            .brand { display: none; }
+            .nav-btn { flex-direction: column; font-size: 0.65rem; padding: 5px; border: none !important; margin: 0; }
+            .nav-btn i { font-size: 1.2rem; }
+            #main-content { padding-bottom: 90px; padding-top: 20px; padding-left: 15px; padding-right: 15px; }
+            .fc-scene { height: 60vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR / BARRA DE NAVEGACIÓN -->
+    <nav id="sidebar">
+        <div class="brand"><i class="fas fa-university"></i> OpoMaster Pro</div>
+        <button id="nav-dash" class="nav-btn active" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> <span>Inicio</span></button>
+        <button id="nav-topics" class="nav-btn" onclick="switchTab('topics')"><i class="fas fa-book"></i> <span>Temario</span></button>
+        <button id="nav-flash" class="nav-btn" onclick="switchTab('flashcards')"><i class="fas fa-bolt"></i> <span>Flashcards</span></button>
+        <button id="nav-tests" class="nav-btn" onclick="switchTab('tests')"><i class="fas fa-check-double"></i> <span>Tests</span></button>
+        <button id="nav-settings" class="nav-btn" onclick="switchTab('settings')"><i class="fas fa-sliders-h"></i> <span>Datos</span></button>
+    </nav>
+
+    <!-- MAIN CONTENT / CONTENIDO PRINCIPAL -->
+    <main id="main-content">
+        
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="section active">
+            <h2 style="color:var(--color-dashboard)">Bienvenido al Estudio</h2>
+            <!-- Tarjetas de Estadísticas -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+                <div class="card" style="border-top: 5px solid var(--color-topics);">
+                    <h3 style="color:var(--text-light)">Temario</h3>
+                    <div style="font-size: 2.5rem; font-weight: 800; color: var(--color-topics);" id="stat-topics">0%</div>
+                </div>
+                <div class="card" style="border-top: 5px solid var(--color-flashcards);">
+                    <h3 style="color:var(--text-light)">Flashcards</h3>
+                    <div style="font-size: 2.5rem; font-weight: 800; color: var(--color-flashcards);" id="stat-fc">0</div>
+                </div>
+                <div class="card" style="border-top: 5px solid var(--color-tests);">
+                    <h3 style="color:var(--text-light)">Nivel Test</h3>
+                    <div style="font-size: 2.5rem; font-weight: 800; color: var(--color-tests);" id="stat-score">0%</div>
+                </div>
+            </div>
+
+            <!-- Pomodoro -->
+            <div class="card" style="margin-top:20px; text-align:center;">
+                <i class="fas fa-stopwatch" style="font-size: 2rem; color: var(--color-dashboard);"></i>
+                <div style="font-size: 3rem; font-family: monospace; font-weight: bold; margin: 10px 0;" id="timer">25:00</div>
+                <button class="btn btn-dash" onclick="toggleTimer()">Iniciar / Pausar</button>
+                <button class="btn" style="background:#ddd;" onclick="resetTimer()">Reset</button>
+            </div>
+        </section>
+
+        <!-- TEMARIO -->
+        <section id="topics" class="section">
+            <h2 style="color:var(--color-topics)"><i class="fas fa-book-open"></i> Temario (21 Temas)</h2>
+            <div class="card">
+                <!-- Grid de botones de temas -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; margin-bottom: 20px;" id="topic-grid"></div>
+                
+                <input type="text" id="topic-title" class="input-field" placeholder="Título del Tema">
+                
+                <!-- Rich Text Editor (contenteditable) -->
+                <div id="topic-content" class="rich-editor" contenteditable="true" data-placeholder="Pega aquí tu tema (conserva negritas, colores, formato...)"></div>
+                
+                <div style="text-align: right; margin-top: 15px;">
+                    <button class="btn btn-topic" onclick="saveTopic()"><i class="fas fa-save"></i> Guardar Cambios</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FLASHCARDS -->
+        <section id="flashcards" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color:var(--color-flashcards)"><i class="fas fa-layer-group"></i> Flashcards</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-settings" style="background:#9CA3AF;" onclick="openModal('modal-fc-manage')"><i class="fas fa-tasks"></i> Gestionar Tarjetas</button>
+                    <button class="btn btn-flash" onclick="openModal('modal-fc-create')"><i class="fas fa-plus"></i> Crear</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <p style="color: #666; margin-bottom: 20px;">Modo de estudio inmersivo:</p>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-flash" onclick="startImmersiveFlashcards('all')"><i class="fas fa-play"></i> Estudiar Todo</button>
+                    <button class="btn btn-flash" style="background: #D97706;" onclick="startImmersiveFlashcards('review')"><i class="fas fa-dumbbell"></i> Repasar Fallos</button>
+                </div>
+                <div id="fc-count" style="margin-top: 15px; font-weight: bold; color: var(--color-flashcards);"></div>
+            </div>
+        </section>
+
+        <!-- TESTS -->
+        <section id="tests" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color:var(--color-tests)"><i class="fas fa-pencil-alt"></i> Banco de Test</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-settings" style="background:#9CA3AF;" onclick="openTestModal('manage')"><i class="fas fa-tasks"></i> Gestionar Preguntas</button>
+                    <button class="btn btn-settings" style="margin-right: 10px;" onclick="openTestModal('import')"><i class="fas fa-file-import"></i> Importar Bloque</button>
+                    <button class="btn btn-test" onclick="openTestModal('manual')"><i class="fas fa-plus"></i> Manual</button>
+                </div>
+            </div>
+
+            <!-- Configuración del Test -->
+            <div class="card" id="test-setup">
+                <p style="margin-bottom:10px; font-weight:bold;">Configura tu Test:</p>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:20px;">
+                    <span>Selecciona Tema:</span>
+                    <select id="test-topic-select" class="select-style">
+                        <option value="all">Todos los Temas</option>
+                        <!-- Options generated via JS -->
+                    </select>
+                </div>
+                
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-test" onclick="startTestRun('all')">Iniciar Test</button>
+                    <button class="btn btn-test" style="background: #BE123C;" onclick="startTestRun('failed')">Repasar Fallos</button>
+                </div>
+            </div>
+
+            <!-- Interfaz del Test -->
+            <div id="test-interface" class="card hidden">
+                <div style="display:flex; justify-content:space-between; color:#999; margin-bottom:10px;">
+                    <span id="q-counter">Pregunta 1</span>
+                    <button style="border:none; background:none; cursor:pointer; color:var(--text-light)" onclick="exitTest()">Salir</button>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span id="q-topic-badge" style="background:#EEF2FF; color:var(--color-dashboard); padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:bold;">Tema X</span>
+                </div>
+                <h3 id="q-text" style="font-size: 1.3rem; margin-bottom: 20px;">...</h3>
+                <div id="q-options"></div>
+                <div id="q-feedback" style="margin-top:15px; font-weight:bold; min-height:25px;"></div>
+                <button id="btn-next-q" class="btn btn-test hidden" style="width:100%; margin-top:15px;" onclick="nextQuestion()">Siguiente</button>
+            </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section id="settings" class="section">
+            <h2 style="color:var(--color-settings)"><i class="fas fa-cogs"></i> Gestión de Datos</h2>
+            <div class="card">
+                <p>Guarda tu progreso descargando el archivo JSON o carga uno existente para sincronizar.</p>
+                <div style="margin-top: 20px; display:flex; gap: 15px; flex-wrap:wrap;">
+                    <button class="btn btn-settings" onclick="exportData()"><i class="fas fa-download"></i> Descargar Copia</button>
+                    <button class="btn btn-settings" onclick="document.getElementById('file-input').click()"><i class="fas fa-upload"></i> Cargar Copia</button>
+                    <button class="btn" style="background: #EF4444; color: white;" onclick="clearData()"><i class="fas fa-trash"></i> Borrar Todo</button>
+                    <input type="file" id="file-input" hidden onchange="importData(this)">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- OVERLAY FLASHCARDS FULLSCREEN -->
+    <div id="fullscreen-overlay">
+        <div style="position:absolute; top:30px; right:30px; color:white; font-size:2rem; cursor:pointer;" onclick="closeFullscreen()">&times;</div>
+        
+        <div class="fc-scene" onclick="flipCard()">
+            <div class="fc-card" id="immersive-card">
+                <div class="fc-face fc-front">
+                    <div style="text-transform:uppercase; letter-spacing:2px; font-size:0.8rem; margin-bottom:20px; opacity:0.8;">Pregunta</div>
+                    <div class="fc-text-main" id="fs-front">?</div>
+                    <div style="margin-top:30px; font-size:0.9rem; opacity:0.7;"><i class="fas fa-hand-pointer"></i> Toca para ver respuesta</div>
+                </div>
+                <!-- Reverso de la tarjeta con corrección de scroll -->
+                <div class="fc-face fc-back">
+                    <div style="text-transform:uppercase; letter-spacing:2px; font-size:0.8rem; margin-bottom:20px; opacity:0.8; color:#333;">Respuesta</div>
+                    <div class="fc-text-main" id="fs-back" style="font-weight:400;">!</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; display: flex; gap: 20px;">
+            <button class="btn" style="background: #EF4444; color: white; padding:15px 40px; border-radius:50px; font-size:1.2rem;" onclick="rateCardFs('hard', event)"><i class="fas fa-times"></i> Repasar</button>
+            <button class="btn" style="background: #10B981; color: white; padding:15px 40px; border-radius:50px; font-size:1.2rem;" onclick="rateCardFs('easy', event)"><i class="fas fa-check"></i> Sabida</button>
+        </div>
+    </div>
+
+    <!-- MODAL IMPORTAR TEST -->
+    <div id="modal-test-import" class="modal">
+        <div class="modal-content">
+            <h3>Importar Test Masivo</h3>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; font-weight:bold;">¿A qué tema pertenecen?</label>
+                <select id="import-topic-select" class="select-style" style="width:100%;"></select>
+            </div>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">
+                Pega tus preguntas. Formato: Pregunta + Opciones (A, B, C, D).<br>
+                Usa un asterisco <code>*</code> al inicio de la respuesta correcta.
+            </p>
+            <textarea id="import-text-area" class="input-field" style="font-family:monospace; height:200px;" placeholder="¿Capital de España?&#10;A) París&#10;*B) Madrid&#10;C) Roma"></textarea>
+            <div style="display:flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn" onclick="closeModal('modal-test-import')">Cancelar</button>
+                <button class="btn btn-test" onclick="processBulkImport()">Procesar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL MANUAL TEST (Crear) -->
+    <div id="modal-test-create" class="modal">
+        <div class="modal-content">
+            <h3>Nueva Pregunta</h3>
+            <div style="margin-bottom:15px;">
+                <label style="font-weight:bold;">Tema:</label>
+                <select id="manual-topic-select" class="select-style" style="width:100%; margin-top:5px;"></select>
+            </div>
+            <textarea id="manual-q" class="input-field" placeholder="Escribe la pregunta..."></textarea>
+            <div style="margin-bottom:5px;">Opciones (Marca la correcta):</div>
+            <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px;"><input type="radio" name="manual-correct" value="0" checked><input id="manual-opt-0" class="input-field" style="margin:0" placeholder="A"></div>
+            <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px;"><input type="radio" name="manual-correct" value="1"><input id="manual-opt-1" class="input-field" style="margin:0" placeholder="B"></div>
+            <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px;"><input type="radio" name="manual-correct" value="2"><input id="manual-opt-2" class="input-field" style="margin:0" placeholder="C"></div>
+            <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px;"><input type="radio" name="manual-correct" value="3"><input id="manual-opt-3" class="input-field" style="margin:0" placeholder="D"></div>
+            <button class="btn btn-test" style="width:100%; margin-top:10px;" onclick="addManualTest()">Guardar</button>
+            <button class="btn" style="width:100%; margin-top:5px;" onclick="closeModal('modal-test-create')">Cancelar</button>
+        </div>
+    </div>
+    
+    <!-- MODAL GESTIONAR TEST -->
+    <div id="modal-test-manage" class="modal">
+        <div class="modal-content">
+            <h3>Gestionar Preguntas</h3>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:15px;">
+                <span>Filtrar por Tema:</span>
+                <select id="manage-test-topic-select" class="select-style" onchange="renderTestManagementList(this.value)">
+                    <option value="all">Todos los Temas</option>
+                </select>
+            </div>
+            <div style="max-height: 40vh; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 10px; padding: 5px;" id="test-management-list">
+                <!-- Lista de preguntas generada por JS -->
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn" onclick="closeModal('modal-test-manage')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR TEST -->
+    <div id="modal-test-edit" class="modal">
+        <div class="modal-content">
+            <h3>Editar Pregunta</h3>
+            <input type="hidden" id="edit-q-id">
+            <div style="margin-bottom:15px;">
+                <label style="font-weight:bold;">Tema:</label>
+                <select id="edit-topic-select" class="select-style" style="width:100%; margin-top:5px;"></select>
+            </div>
+            <textarea id="edit-q-text" class="input-field" placeholder="Escribe la pregunta..."></textarea>
+            <div style="margin-bottom:5px;">Opciones (Marca la correcta):</div>
+            <div id="edit-options-container">
+                <!-- Opciones se cargan aquí -->
+            </div>
+            <button class="btn btn-test" style="width:100%; margin-top:10px;" onclick="saveEditedTest()">Guardar Cambios</button>
+            <button class="btn" style="width:100%; margin-top:5px;" onclick="closeModal('modal-test-edit')">Cancelar</button>
+        </div>
+    </div>
+
+
+    <!-- MODAL FLASHCARD (Crear) -->
+    <div id="modal-fc-create" class="modal">
+        <div class="modal-content">
+            <h3>Nueva Flashcard (Con Formato)</h3>
+            <div style="margin-bottom:5px; color:#666; font-size:0.9rem;">Anverso (Pregunta):</div>
+            <div id="new-fc-front" class="rich-input-small" contenteditable="true"></div>
+            <div style="margin-bottom:5px; color:#666; font-size:0.9rem;">Reverso (Respuesta):</div>
+            <div id="new-fc-back" class="rich-input-small" contenteditable="true"></div>
+            <div style="text-align: right;">
+                <button class="btn" onclick="closeModal('modal-fc-create')">Cancelar</button>
+                <button class="btn btn-flash" onclick="addFlashcard()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTIONAR FLASHCARDS -->
+    <div id="modal-fc-manage" class="modal">
+        <div class="modal-content">
+            <h3>Gestionar Flashcards</h3>
+            <div style="max-height: 50vh; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 10px; padding: 5px;" id="fc-management-list">
+                <!-- Lista de flashcards generada por JS -->
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn" onclick="closeModal('modal-fc-manage'); updateStats();">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR FLASHCARD -->
+    <div id="modal-fc-edit" class="modal">
+        <div class="modal-content">
+            <h3>Editar Flashcard</h3>
+            <input type="hidden" id="edit-fc-id">
+            <div style="margin-bottom:5px; color:#666; font-size:0.9rem;">Anverso (Pregunta):</div>
+            <div id="edit-fc-front" class="rich-input-small" contenteditable="true"></div>
+            <div style="margin-bottom:5px; color:#666; font-size:0.9rem;">Reverso (Respuesta):</div>
+            <div id="edit-fc-back" class="rich-input-small" contenteditable="true"></div>
+            <div style="text-align: right; margin-top:15px;">
+                <button class="btn" onclick="closeModal('modal-fc-edit')">Cancelar</button>
+                <button class="btn btn-flash" onclick="saveEditedFlashcard()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ESTRUCTURA DE DATOS Y PERSISTENCIA (localStorage) ---
+        const defaultState = {
+            // 21 temas iniciales, contenido vacío y listo para ser llenado con HTML (formato enriquecido)
+            topics: Array.from({length: 21}, (_, i) => ({ id: i, title: `Tema ${i+1}: Título por defecto`, content: "" })), 
+            // { id, front (html), back (html), status ('learning' | 'mastered') }
+            flashcards: [], 
+            // { id, question (str), options (arr), correct (int), status ('new' | 'passed' | 'failed'), topicId (int) }
+            questions: [], 
+            stats: { fcMastered: 0, testsDone: 0, correctAnswers: 0 }
+        };
+        
+        let app = JSON.parse(localStorage.getItem('opoMasterV4')) || defaultState;
+        
+        /** Guarda el estado actual en localStorage. */
+        function save() {
+            localStorage.setItem('opoMasterV4', JSON.stringify(app));
+            updateStats();
+        }
+
+        /** Muestra un mensaje temporal en consola (simulando un "toast"). */
+        function showTemporaryMessage(message) {
+            console.log("Mensaje de la App: " + message);
+        }
+
+        // --- NAVEGACIÓN Y UTILIDADES GENERALES ---
+        
+        /** Cambia la pestaña activa en la interfaz. */
+        function switchTab(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            const navMap = { 'dashboard': 'nav-dash', 'topics': 'nav-topics', 'flashcards': 'nav-flash', 'tests': 'nav-tests', 'settings': 'nav-settings' };
+            document.getElementById(navMap[id]).classList.add('active');
+
+            if(id === 'tests') updateTestDropdowns();
+            if(id === 'flashcards') renderFlashcardManagementList();
+        }
+
+        /** Abre un modal. */
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        
+        /** Cierra un modal. */
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+
+        // --- TEMARIO (TOPICS) ---
+        let currentTopic = 0;
+        
+        /** Renderiza la cuadrícula de botones de temas. */
+        function renderTopics() {
+            const grid = document.getElementById('topic-grid');
+            grid.innerHTML = '';
+            app.topics.forEach((t, i) => {
+                const btn = document.createElement('div');
+                btn.className = `topic-btn ${i === currentTopic ? 'active' : ''}`;
+                btn.innerText = i + 1;
+                btn.onclick = () => loadTopic(i);
+                grid.appendChild(btn);
+            });
+        }
+        
+        /** Carga el contenido de un tema en el editor. */
+        function loadTopic(idx) {
+            currentTopic = idx;
+            document.getElementById('topic-title').value = app.topics[idx].title;
+            document.getElementById('topic-content').innerHTML = app.topics[idx].content;
+            renderTopics();
+        }
+        
+        /** Guarda el contenido actual del editor en el tema activo. */
+        function saveTopic() {
+            app.topics[currentTopic].title = document.getElementById('topic-title').value;
+            app.topics[currentTopic].content = document.getElementById('topic-content').innerHTML;
+            save();
+            showTemporaryMessage(`Tema ${currentTopic + 1} guardado con formato.`);
+        }
+
+        // --- FLASHCARDS - LÓGICA DE CREACIÓN Y GESTIÓN ---
+        
+        /** Añade una nueva flashcard. */
+        function addFlashcard() {
+            const f = document.getElementById('new-fc-front').innerHTML;
+            const b = document.getElementById('new-fc-back').innerHTML;
+            if(f.trim() && b.trim()) {
+                app.flashcards.push({ id: Date.now(), front: f, back: b, status: 'learning' });
+                save();
+                document.getElementById('new-fc-front').innerHTML = '';
+                document.getElementById('new-fc-back').innerHTML = '';
+                closeModal('modal-fc-create');
+                renderFlashcardManagementList();
+                showTemporaryMessage("Flashcard creada");
+            } else {
+                showTemporaryMessage("Ambos campos son necesarios.");
+            }
+        }
+        
+        /** Renderiza la lista de flashcards en el modal de gestión. */
+        function renderFlashcardManagementList() {
+            const list = document.getElementById('fc-management-list');
+            list.innerHTML = '';
+            
+            if(app.flashcards.length === 0) {
+                list.innerHTML = '<p style="text-align:center; padding:20px; color:#9CA3AF;">No hay flashcards creadas.</p>';
+                return;
+            }
+
+            app.flashcards.forEach(fc => {
+                const item = document.createElement('div');
+                item.className = 'management-item';
+                
+                // Extrae el texto plano del HTML (para mostrar solo la pregunta)
+                const frontText = new DOMParser().parseFromString(fc.front, 'text/html').body.textContent;
+
+                item.innerHTML = `
+                    <div class="management-item-text">${frontText}</div>
+                    <div style="min-width: 120px; text-align: right;">
+                        <button class="btn" style="background: #FBBF24; color:white; padding: 6px 10px; margin-right: 5px;" onclick="openEditFlashcard('${fc.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn" style="background: #EF4444; color:white; padding: 6px 10px;" onclick="deleteFlashcard('${fc.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        /** Abre el modal de edición de una flashcard. */
+        function openEditFlashcard(id) {
+            const fc = app.flashcards.find(f => f.id == id);
+            if (!fc) return;
+
+            document.getElementById('edit-fc-id').value = id;
+            document.getElementById('edit-fc-front').innerHTML = fc.front; 
+            document.getElementById('edit-fc-back').innerHTML = fc.back;
+            
+            closeModal('modal-fc-manage');
+            openModal('modal-fc-edit');
+        }
+
+        /** Guarda los cambios editados de la flashcard. */
+        function saveEditedFlashcard() {
+            const id = document.getElementById('edit-fc-id').value;
+            const idx = app.flashcards.findIndex(f => f.id == id);
+            
+            if(idx > -1) {
+                app.flashcards[idx].front = document.getElementById('edit-fc-front').innerHTML;
+                app.flashcards[idx].back = document.getElementById('edit-fc-back').innerHTML;
+                save();
+                closeModal('modal-fc-edit');
+                renderFlashcardManagementList();
+                openModal('modal-fc-manage'); 
+                showTemporaryMessage('Flashcard editada correctamente.');
+            }
+        }
+
+        /** Elimina una flashcard (con confirmación simulada). */
+        function deleteFlashcard(id) {
+            if(window.confirm('¿Seguro que quieres eliminar esta flashcard?')) {
+                app.flashcards = app.flashcards.filter(f => f.id != id);
+                save();
+                renderFlashcardManagementList();
+            }
+        }
+
+        // --- FLASHCARDS - MODO INMERSIVO ---
+        let studyQueue = [];
+        let cardIdx = 0;
+
+        /** Inicia la sesión de estudio inmersiva. */
+        function startImmersiveFlashcards(mode) {
+            if(app.flashcards.length === 0) return showTemporaryMessage("Crea flashcards primero.");
+            // Si es 'all' usa todas, si es 'review' solo usa las 'learning' (falladas o nuevas)
+            studyQueue = mode === 'all' ? [...app.flashcards] : app.flashcards.filter(f => f.status === 'learning');
+            
+            if(studyQueue.length === 0) return showTemporaryMessage("No hay cartas para repasar.");
+            studyQueue.sort(() => Math.random() - 0.5); // Orden aleatorio
+            cardIdx = 0;
+            document.getElementById('fullscreen-overlay').style.display = 'flex';
+            loadFsCard();
+        }
+
+        /** Carga la tarjeta actual en el overlay. */
+        function loadFsCard() {
+            const c = studyQueue[cardIdx];
+            document.getElementById('fs-front').innerHTML = c.front; // Render HTML
+            document.getElementById('fs-back').innerHTML = c.back; // Render HTML
+            document.getElementById('immersive-card').classList.remove('is-flipped');
+        }
+
+        /** Gira la tarjeta 3D. */
+        function flipCard() { document.getElementById('immersive-card').classList.toggle('is-flipped'); }
+        
+        /** Cierra el overlay de estudio. */
+        function closeFullscreen() { document.getElementById('fullscreen-overlay').style.display = 'none'; }
+        
+        /** Califica la tarjeta como 'Sabida' o 'Repasar' y pasa a la siguiente. */
+        function rateCardFs(rating, e) {
+            e.stopPropagation(); // Evita que el click voltee la tarjeta
+            const c = studyQueue[cardIdx];
+            const realIdx = app.flashcards.findIndex(x => x.id === c.id);
+            // Actualiza el estado global de la tarjeta
+            app.flashcards[realIdx].status = rating === 'easy' ? 'mastered' : 'learning';
+            save(); 
+            
+            cardIdx++;
+            if(cardIdx < studyQueue.length) {
+                // Voltea y carga la siguiente
+                document.getElementById('immersive-card').classList.remove('is-flipped');
+                setTimeout(loadFsCard, 200);
+            } else {
+                // Fin de la sesión
+                closeFullscreen();
+                showTemporaryMessage("Sesión de flashcards completada");
+            }
+        }
+
+        // --- TESTS - LÓGICA DE CREACIÓN Y GESTIÓN ---
+
+        /** Rellena todos los select de temas. */
+        function updateTestDropdowns() {
+            const selectIds = ['test-topic-select', 'import-topic-select', 'manual-topic-select', 'manage-test-topic-select', 'edit-topic-select'];
+            
+            selectIds.forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+
+                const currentVal = sel.value; 
+                const includeAll = id === 'test-topic-select' || id === 'manage-test-topic-select';
+
+                sel.innerHTML = includeAll ? '<option value="all">Todos los Temas</option>' : '';
+                app.topics.forEach((t, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    // Usa el título completo para mayor claridad
+                    opt.innerText = `${i+1}. ${t.title}`; 
+                    sel.appendChild(opt);
+                });
+                // Restaura la selección si es posible
+                if(currentVal && Array.from(sel.options).some(opt => opt.value === currentVal)) {
+                    sel.value = currentVal;
+                }
+            });
+        }
+
+        /** Abre los modales de test (con gestión previa de dropdowns). */
+        function openTestModal(type) {
+            updateTestDropdowns();
+            if(type === 'manage') {
+                // Asegura que el select de filtro se inicialice a 'all' o al valor anterior
+                document.getElementById('manage-test-topic-select').value = 'all'; 
+                renderTestManagementList('all');
+                openModal('modal-test-manage');
+            } else {
+                openModal(type === 'import' ? 'modal-test-import' : 'modal-test-create');
+            }
+        }
+
+        /** Renderiza la lista de preguntas para el modal de gestión. */
+        function renderTestManagementList(topicIdStr) {
+            const topicId = topicIdStr === 'all' ? 'all' : parseInt(topicIdStr);
+            const list = document.getElementById('test-management-list');
+            list.innerHTML = '';
+            
+            let filteredQuestions = app.questions;
+            if(topicId !== 'all') {
+                filteredQuestions = app.questions.filter(q => q.topicId === topicId);
+            }
+
+            if(filteredQuestions.length === 0) {
+                list.innerHTML = '<p style="text-align:center; padding:20px; color:#9CA3AF;">No hay preguntas para este filtro.</p>';
+                return;
+            }
+
+            filteredQuestions.forEach(q => {
+                const item = document.createElement('div');
+                item.className = 'management-item';
+                
+                const topicNum = q.topicId + 1;
+                const statusColor = q.status === 'passed' ? '#10B981' : q.status === 'failed' ? '#EF4444' : '#64748B';
+                
+                item.innerHTML = `
+                    <div style="font-weight:bold; width:30px; color:${statusColor};">T${topicNum}</div>
+                    <div class="management-item-text">${q.question}</div>
+                    <div style="min-width: 120px; text-align: right;">
+                        <button class="btn" style="background: #E11D48; color:white; padding: 6px 10px; margin-right: 5px;" onclick="openEditTest('${q.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn" style="background: #EF4444; color:white; padding: 6px 10px;" onclick="deleteTestQuestion('${q.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        /** Abre el modal de edición de una pregunta de test. */
+        function openEditTest(id) {
+            const q = app.questions.find(q => q.id == id);
+            if (!q) return;
+
+            document.getElementById('edit-q-id').value = id;
+            document.getElementById('edit-q-text').value = q.question;
+            document.getElementById('edit-topic-select').value = q.topicId;
+
+            const optsContainer = document.getElementById('edit-options-container');
+            optsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, i) => {
+                const checked = i === q.correct ? 'checked' : '';
+                const div = document.createElement('div');
+                div.style = 'display:flex; align-items:center; gap:5px; margin-bottom:5px;';
+                div.innerHTML = `
+                    <input type="radio" name="edit-correct" value="${i}" ${checked}>
+                    <input id="edit-opt-${i}" class="input-field" style="margin:0" value="${opt}">
+                `;
+                optsContainer.appendChild(div);
+            });
+
+            closeModal('modal-test-manage');
+            openModal('modal-test-edit');
+        }
+
+        /** Guarda los cambios de la pregunta editada. */
+        function saveEditedTest() {
+            const id = document.getElementById('edit-q-id').value;
+            const idx = app.questions.findIndex(q => q.id == id);
+            
+            if(idx > -1) {
+                const newTopicId = parseInt(document.getElementById('edit-topic-select').value);
+                const newQ = document.getElementById('edit-q-text').value.trim();
+                const newOpts = [
+                    document.getElementById('edit-opt-0').value.trim(),
+                    document.getElementById('edit-opt-1').value.trim(),
+                    document.getElementById('edit-opt-2').value.trim(),
+                    document.getElementById('edit-opt-3').value.trim()
+                ];
+                const newCorrect = parseInt(document.querySelector('input[name="edit-correct"]:checked').value);
+                
+                if (newQ && newOpts.every(opt => opt)) {
+                    app.questions[idx].topicId = newTopicId;
+                    app.questions[idx].question = newQ;
+                    app.questions[idx].options = newOpts;
+                    app.questions[idx].correct = newCorrect;
+                    
+                    save();
+                    closeModal('modal-test-edit');
+                    // Vuelve a la lista de gestión con el filtro actual
+                    renderTestManagementList(document.getElementById('manage-test-topic-select').value);
+                    openModal('modal-test-manage');
+                    showTemporaryMessage('Pregunta editada correctamente.');
+                } else {
+                    showTemporaryMessage("Rellena todos los campos.");
+                }
+            }
+        }
+
+        /** Elimina una pregunta de test (con confirmación simulada). */
+        function deleteTestQuestion(id) {
+            if(window.confirm('¿Seguro que quieres eliminar esta pregunta?')) {
+                app.questions = app.questions.filter(q => q.id != id);
+                save();
+                renderTestManagementList(document.getElementById('manage-test-topic-select').value);
+            }
+        }
+
+        /** Procesa la importación masiva de preguntas desde un bloque de texto. */
+        function processBulkImport() {
+            const text = document.getElementById('import-text-area').value;
+            const topicId = parseInt(document.getElementById('import-topic-select').value);
+            if(!text) return;
+
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+            let currentQ = null;
+            let count = 0;
+            // Regex para capturar opciones, opcionalmente con un asterisco (*) para indicar la correcta
+            const optionRegex = /^(\*?)([a-dA-D])[\)\.]\s*(.*)/; 
+
+            for(let line of lines) {
+                const match = line.match(optionRegex);
+                if (match) {
+                    // Es una opción
+                    if (currentQ) {
+                        const isCorrect = match[1] === '*';
+                        currentQ.options.push(match[3].trim()); // El match[3] es el texto de la opción
+                        if (isCorrect) currentQ.correct = currentQ.options.length - 1;
+                    }
+                } else {
+                    // Es una pregunta, o texto entre preguntas.
+                    // Si ya tenemos una pregunta en curso con suficientes opciones, la guardamos
+                    if (currentQ && currentQ.options.length >= 2) { 
+                        if(currentQ.options.length > 0 && currentQ.correct === 0 && !currentQ.options.some((_, i) => i === currentQ.correct)) {
+                            // Si solo hay 1 opción, o si hay un error en la correcta, no la contamos.
+                            // Esto previene errores de preguntas incompletas en el último bloque.
+                        } else {
+                           app.questions.push(currentQ);
+                           count++;
+                        }
+                    }
+                    
+                    // Crea una nueva pregunta si la línea actual parece una pregunta (no está vacía)
+                    if (line) {
+                        currentQ = { id: Date.now() + Math.random(), question: line, options: [], correct: 0, status: 'new', topicId: topicId };
+                    }
+                }
+            }
+            // Add the last question if it's valid (4 opciones y marcada la correcta)
+            if (currentQ && currentQ.options.length >= 2) {
+                app.questions.push(currentQ);
+                count++;
+            }
+
+            save();
+            closeModal('modal-test-import');
+            document.getElementById('import-text-area').value = '';
+            showTemporaryMessage(`${count} preguntas importadas con éxito!`);
+        }
+
+        /** Añade una pregunta de test manualmente. */
+        function addManualTest() {
+            const topicId = parseInt(document.getElementById('manual-topic-select').value);
+            const question = document.getElementById('manual-q').value.trim();
+            const options = [
+                document.getElementById('manual-opt-0').value.trim(),
+                document.getElementById('manual-opt-1').value.trim(),
+                document.getElementById('manual-opt-2').value.trim(),
+                document.getElementById('manual-opt-3').value.trim()
+            ];
+            const correct = parseInt(document.querySelector('input[name="manual-correct"]:checked').value);
+
+            if (question && options.every(opt => opt)) {
+                app.questions.push({
+                    id: Date.now() + Math.random(), 
+                    question, 
+                    options, 
+                    correct, 
+                    status: 'new', 
+                    topicId
+                });
+                save();
+                closeModal('modal-test-create');
+                document.getElementById('manual-q').value = '';
+                options.forEach((_, i) => document.getElementById(`manual-opt-${i}`).value = '');
+                showTemporaryMessage("Pregunta guardada.");
+            } else {
+                showTemporaryMessage("Rellena la pregunta y las 4 opciones.");
+            }
+        }
+
+
+        // --- TEST RUNNER LÓGICA ---
+        let testQueue = [];
+        let currentQIndex = 0;
+        let testScore = 0;
+        let testTotal = 0;
+
+        /** Inicia la sesión de test. */
+        function startTestRun(mode) {
+            const topicId = document.getElementById('test-topic-select').value;
+            let questions = app.questions;
+
+            if (topicId !== 'all') {
+                questions = questions.filter(q => q.topicId == parseInt(topicId));
+            }
+            if (mode === 'failed') {
+                questions = questions.filter(q => q.status === 'failed');
+            }
+            
+            if (questions.length === 0) {
+                return showTemporaryMessage("No hay preguntas disponibles con la configuración actual.");
+            }
+
+            testQueue = [...questions].sort(() => Math.random() - 0.5); // Orden aleatorio
+            currentQIndex = 0;
+            testScore = 0;
+            testTotal = 0;
+
+            document.getElementById('test-setup').classList.add('hidden');
+            document.getElementById('test-interface').classList.remove('hidden');
+            
+            loadQuestion();
+        }
+
+        /** Carga la pregunta actual en la interfaz de test. */
+        function loadQuestion() {
+            const q = testQueue[currentQIndex];
+            const topicTitle = app.topics[q.topicId].title;
+
+            document.getElementById('q-counter').innerText = `Pregunta ${currentQIndex + 1} / ${testQueue.length}`;
+            document.getElementById('q-topic-badge').innerText = topicTitle;
+            document.getElementById('q-text').innerText = q.question;
+            document.getElementById('q-feedback').innerHTML = '';
+            document.getElementById('btn-next-q').classList.add('hidden');
+
+            const optionsDiv = document.getElementById('q-options');
+            optionsDiv.innerHTML = '';
+
+            q.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span style="font-weight:bold; margin-right: 10px;">${String.fromCharCode(65 + i)})</span> ${opt}`;
+                btn.onclick = () => checkAnswer(i);
+                btn.dataset.index = i;
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        /** Comprueba la respuesta seleccionada por el usuario. */
+        function checkAnswer(selectedIndex) {
+            const q = testQueue[currentQIndex];
+            const correctIndex = q.correct;
+            const options = document.querySelectorAll('#q-options .option-btn');
+            
+            // Deshabilita todos los botones para evitar doble click
+            options.forEach(btn => btn.onclick = null);
+
+            // Resalta respuestas
+            options.forEach(btn => {
+                const index = parseInt(btn.dataset.index);
+                if (index === correctIndex) {
+                    btn.classList.add('correct');
+                } else if (index === selectedIndex) {
+                    btn.classList.add('wrong');
+                }
+            });
+
+            // Actualiza el estado de la pregunta
+            const isCorrect = selectedIndex === correctIndex;
+            
+            if (isCorrect) {
+                testScore++;
+                document.getElementById('q-feedback').innerHTML = `<i class="fas fa-check-circle" style="color:var(--color-topics); margin-right: 5px;"></i> ¡Correcto!`;
+                q.status = 'passed';
+            } else {
+                document.getElementById('q-feedback').innerHTML = `<i class="fas fa-times-circle" style="color:var(--color-tests); margin-right: 5px;"></i> Incorrecto. La respuesta es la ${String.fromCharCode(65 + correctIndex)}.`;
+                q.status = 'failed';
+            }
+            
+            // Actualiza el estado en la aplicación global
+            const realIdx = app.questions.findIndex(x => x.id === q.id);
+            if(realIdx !== -1) app.questions[realIdx].status = q.status;
+            
+            testTotal++;
+            document.getElementById('btn-next-q').classList.remove('hidden');
+        }
+
+        /** Carga la siguiente pregunta o finaliza el test. */
+        function nextQuestion() {
+            currentQIndex++;
+            if (currentQIndex < testQueue.length) {
+                loadQuestion();
+            } else {
+                exitTest(true);
+            }
+        }
+
+        /** Vuelve a la configuración del test y guarda el progreso. */
+        function exitTest(isFinished = false) {
+            document.getElementById('test-interface').classList.add('hidden');
+            document.getElementById('test-setup').classList.remove('hidden');
+            save(); // Guarda el estado (passed/failed) de las preguntas
+
+            if (isFinished) {
+                const scorePercentage = (testScore / testTotal) * 100;
+                showTemporaryMessage(`Test Finalizado. Acertaste ${testScore} de ${testTotal} (${scorePercentage.toFixed(1)}%).`);
+            }
+        }
+        
+        // --- DATOS Y CONFIGURACIÓN (SETTINGS) ---
+        
+        /** Exporta todos los datos de la aplicación a un archivo JSON. */
+        function exportData() {
+            const dataStr = JSON.stringify(app, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `opoMasterV4_backup_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showTemporaryMessage("Datos exportados correctamente.");
+        }
+
+        /** Importa datos desde un archivo JSON. */
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedApp = JSON.parse(e.target.result);
+                    // Validación simple
+                    if (importedApp.topics && importedApp.flashcards && importedApp.questions) {
+                        // Sobreescribe los datos actuales
+                        app = importedApp; 
+                        save();
+                        loadTopic(currentTopic); // Recarga el contenido del tema
+                        updateStats();
+                        showTemporaryMessage("Datos importados con éxito. ¡Bienvenido de nuevo!");
+                    } else {
+                        showTemporaryMessage("Error: El archivo JSON no tiene el formato esperado.");
+                    }
+                } catch (error) {
+                    showTemporaryMessage("Error al procesar el archivo: " + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        /** Borra todos los datos (con confirmación simulada). */
+        function clearData() {
+            if (window.confirm("ATENCIÓN: ¿Estás seguro de que quieres borrar TODOS tus datos (temas, tarjetas, tests)? Esta acción es irreversible.")) {
+                localStorage.removeItem('opoMasterV4');
+                app = defaultState;
+                save();
+                loadTopic(0);
+                updateStats();
+                showTemporaryMessage("Todos los datos han sido borrados.");
+            }
+        }
+
+        // --- ESTADÍSTICAS ---
+        /** Actualiza los números en el Dashboard y en la sección de Flashcards. */
+        function updateStats() {
+            // Flashcards stats
+            const masteredFc = app.flashcards.filter(f => f.status === 'mastered').length;
+            const totalFc = app.flashcards.length;
+            document.getElementById('stat-fc').innerText = `${masteredFc} / ${totalFc}`;
+            document.getElementById('fc-count').innerText = `Tienes ${totalFc} tarjetas. ${masteredFc} marcadas como Sabidas.`;
+
+            // Topics stats (simplified: % de temas con contenido significativo)
+            const filledTopics = app.topics.filter(t => t.content.length > 50).length;
+            const topicProgress = (filledTopics / app.topics.length) * 100;
+            document.getElementById('stat-topics').innerText = `${topicProgress.toFixed(0)}%`;
+
+            // Test stats (Puntuación media de todas las preguntas respondidas)
+            const totalAnsweredQuestions = app.questions.filter(q => q.status === 'passed' || q.status === 'failed').length;
+            const correctQuestions = app.questions.filter(q => q.status === 'passed').length;
+            const avgScore = totalAnsweredQuestions > 0 ? (correctQuestions / totalAnsweredQuestions) * 100 : 0;
+            document.getElementById('stat-score').innerText = `${avgScore.toFixed(0)}%`;
+        }
+
+        // --- POMODORO ---
+        let timerRunning = false;
+        let timerInterval;
+        let timeRemaining = 25 * 60; // 25 minutos en segundos
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            const seconds = (timeRemaining % 60).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `${minutes}:${seconds}`;
+        }
+
+        function toggleTimer() {
+            if (timerRunning) {
+                clearInterval(timerInterval);
+                timerRunning = false;
+            } else {
+                timerRunning = true;
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    updateDisplay();
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        timerRunning = false;
+                        timeRemaining = 5 * 60; // 5 minutos de descanso
+                        updateDisplay();
+                        showTemporaryMessage("¡Tiempo! Es hora de un breve descanso de 5 minutos.");
+                        // Inicia automáticamente el descanso (opcional)
+                        // toggleTimer(); 
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            timeRemaining = 25 * 60;
+            updateDisplay();
+        }
+
+        // --- INICIALIZACIÓN ---
+        window.onload = () => {
+            renderTopics();
+            loadTopic(0); // Carga el Tema 1 por defecto al iniciar
+            updateStats();
+            updateDisplay();
+        };
+
+    </script>
+</body>
+</html>
